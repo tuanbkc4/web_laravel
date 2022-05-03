@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
-use App\Http\Requests\StoreCourseRequest;
-use App\Http\Requests\UpdateCourseRequest;
+use App\Http\Requests\Course\StoreCourseRequest;
+use App\Http\Requests\Course\UpdateCourseRequest;
 use Illuminate\Http\Request;
 use PHPUnit\Framework\Constraint\Count;
 
@@ -15,11 +15,17 @@ class CourseController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::all();
+        $search = $request->get('q');
+        $courses = Course::query()
+                ->where('name', 'LIKE', '%'.$search.'%')
+                ->paginate(3);
+        $courses->appends(['q' => $search]);
+
         return view('Course.index', [
             'courses' => $courses,
+            'search' => $search
         ]);
     }
 
@@ -36,13 +42,14 @@ class CourseController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreCourseRequest  $request
+     * @param  \App\Http\Requests\Course\StoreCourseRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreCourseRequest $request)
     {
         $object = new Course();
-        $object->fill($request->except('_token')); // column khớp column database 
+        // $object->fill($request->except('_token')); // column khớp column database 
+        $object->fill($request->validated()); // column khớp column database 
         $object->save();
         return redirect()->route('courses.index');
 
@@ -75,11 +82,11 @@ class CourseController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateCourseRequest  $request
+     * @param  \App\Http\Requests\Course\UpdateCourseRequest  $request
      * @param  \App\Models\Course  $course
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Course $course)
+    public function update(UpdateCourseRequest $request, Course $course)
     {
         // c1
         // Course::where('id', $course->id)->update(

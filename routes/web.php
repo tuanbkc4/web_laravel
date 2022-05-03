@@ -25,3 +25,7 @@ Route::resource('courses', CourseController::class );
 //     Route::put('/edit/{course}', [CourseController::class, 'update'])->name('courses.update');
 
 // });
+
+Route::get('test', function(){
+    return view('layout.default');
+});
